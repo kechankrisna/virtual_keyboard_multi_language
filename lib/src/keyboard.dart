@@ -25,10 +25,10 @@ class VirtualKeyboard extends StatefulWidget {
 
   /// Font size for keyboard keys.
   final double fontSize;
-   
+
   /// the custom layout for multi or single language
   final VirtualKeyboardLayoutKeys? customLayoutKeys;
-  
+
   /// the text controller go get the output and send the default input
   final TextEditingController? textController;
 
@@ -71,7 +71,7 @@ class VirtualKeyboard extends StatefulWidget {
 class _VirtualKeyboardState extends State<VirtualKeyboard> {
   VirtualKeyboardType type = VirtualKeyboardType.Alphanumeric;
   Function(VirtualKeyboardKey key)? onKeyPress;
-  TextEditingController textController = TextEditingController();
+  late TextEditingController textController;
   // The builder function will be called for each Key object.
   Widget Function(BuildContext context, VirtualKeyboardKey key)? builder;
   late double height;
@@ -145,7 +145,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   @override
   void initState() {
     super.initState();
-    
+
     textController = widget.textController ?? TextEditingController();
     width = widget.width;
     type = widget.type;
@@ -236,7 +236,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
             });
 
       if(this.reverseLayout)
-        items = items.reversed.toList();      
+        items = items.reversed.toList();
       return Material(
         color: Colors.transparent,
         child: Row(
@@ -326,7 +326,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
         actionKey = GestureDetector(
             onTap: () {
               setState(() {
-                customLayoutKeys.switchLanguage();                
+                customLayoutKeys.switchLanguage();
               });
             },
             child: Container(
