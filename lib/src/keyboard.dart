@@ -12,7 +12,7 @@ class VirtualKeyboard extends StatefulWidget {
   final VirtualKeyboardType type;
 
   /// Callback for Key press event. Called with pressed `Key` object.
-  final Function? onKeyPress;
+  final Function(VirtualKeyboardKey key)? onKeyPress;
 
   /// Virtual keyboard height. Default is 300
   final double height;
@@ -70,7 +70,7 @@ class VirtualKeyboard extends StatefulWidget {
 /// Holds the state for Virtual Keyboard class.
 class _VirtualKeyboardState extends State<VirtualKeyboard> {
   VirtualKeyboardType type = VirtualKeyboardType.Alphanumeric;
-  Function? onKeyPress;
+  Function(VirtualKeyboardKey key)? onKeyPress;
   TextEditingController textController = TextEditingController();
   // The builder function will be called for each Key object.
   Widget Function(BuildContext context, VirtualKeyboardKey key)? builder;
