@@ -71,7 +71,8 @@ class VirtualKeyboard extends StatefulWidget {
 class _VirtualKeyboardState extends State<VirtualKeyboard> {
   VirtualKeyboardType type = VirtualKeyboardType.Alphanumeric;
   Function(VirtualKeyboardKey key)? onKeyPress;
-  late TextEditingController textController;
+  TextEditingController? textController;
+
   // The builder function will be called for each Key object.
   Widget Function(BuildContext context, VirtualKeyboardKey key)? builder;
   late double height;
@@ -81,27 +82,30 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   late bool alwaysCaps;
   late bool reverseLayout;
   late VirtualKeyboardLayoutKeys customLayoutKeys;
+
   // Text Style for keys.
   late TextStyle textStyle;
 
   // True if shift is enabled.
   bool isShiftEnabled = false;
 
-  void _onKeyPress(VirtualKeyboardKey key){
-
+  void _onKeyPress(VirtualKeyboardKey key) {
     if (key.keyType == VirtualKeyboardKeyType.String) {
-      textController.text += (isShiftEnabled ? key.capsText! : key.text!);
+      if (isShiftEnabled) {
+        _insertText(key.capsText!);
+      } else {
+        _insertText(key.text!);
+      }
     } else if (key.keyType == VirtualKeyboardKeyType.Action) {
       switch (key.action) {
         case VirtualKeyboardKeyAction.Backspace:
-          if (textController.text.length == 0) return;
-          textController.text = textController.text.substring(0, textController.text.length - 1);
+          _backspace();
           break;
         case VirtualKeyboardKeyAction.Return:
-          textController.text += '\n';
+          _insertText('\n');
           break;
         case VirtualKeyboardKeyAction.Space:
-          textController.text += key.text!;
+          _insertText(key.text!);
           break;
         case VirtualKeyboardKeyAction.Shift:
           break;
@@ -109,15 +113,73 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
       }
     }
 
-    if(onKeyPress != null)
-      onKeyPress!(key);
-
+    if (onKeyPress != null) onKeyPress!(key);
   }
 
-  @override dispose(){
-    if(widget.textController == null) // dispose if created locally only
-      textController.dispose();
-    super.dispose();
+  void _insertText(String myText) {
+    if (textController != null) {
+      final text = textController!.text;
+      final textSelection = textController!.selection;
+      final newText = text.replaceRange(
+        textSelection.start,
+        textSelection.end,
+        myText,
+      );
+      final myTextLength = myText.length;
+      textController!.text = newText;
+      textController!.selection = textSelection.copyWith(
+        baseOffset: textSelection.start + myTextLength,
+        extentOffset: textSelection.start + myTextLength,
+      );
+    }
+  }
+
+  void _backspace() {
+    if (textController != null) {
+      final text = textController!.text;
+      final textSelection = textController!.selection;
+      final selectionLength = textSelection.end - textSelection.start;
+
+      // There is a selection.
+      if (selectionLength > 0) {
+        final newText = text.replaceRange(
+          textSelection.start,
+          textSelection.end,
+          '',
+        );
+        textController!.text = newText;
+        textController!.selection = textSelection.copyWith(
+          baseOffset: textSelection.start,
+          extentOffset: textSelection.start,
+        );
+        return;
+      }
+
+      // The cursor is at the beginning.
+      if (textSelection.start == 0) {
+        return;
+      }
+
+      // Delete the previous character
+      final previousCodeUnit = text.codeUnitAt(textSelection.start - 1);
+      final offset = _isUtf16Surrogate(previousCodeUnit) ? 2 : 1;
+      final newStart = textSelection.start - offset;
+      final newEnd = textSelection.start;
+      final newText = text.replaceRange(
+        newStart,
+        newEnd,
+        '',
+      );
+      textController!.text = newText;
+      textController!.selection = textSelection.copyWith(
+        baseOffset: newStart,
+        extentOffset: newStart,
+      );
+    }
+  }
+
+  bool _isUtf16Surrogate(int value) {
+    return value & 0xF800 == 0xD800;
   }
 
   @override
@@ -132,8 +194,8 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
       fontSize = widget.fontSize;
       alwaysCaps = widget.alwaysCaps;
       reverseLayout = widget.reverseLayout;
-      textController = widget.textController ?? textController;
-      customLayoutKeys = widget.customLayoutKeys ?? customLayoutKeys ;
+      textController = widget.textController;
+      customLayoutKeys = widget.customLayoutKeys ?? customLayoutKeys;
       // Init the Text Style for keys.
       textStyle = TextStyle(
         fontSize: fontSize,
@@ -146,10 +208,12 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   void initState() {
     super.initState();
 
-    textController = widget.textController ?? TextEditingController();
+    textController = widget.textController;
     width = widget.width;
     type = widget.type;
-    customLayoutKeys = widget.customLayoutKeys ?? VirtualKeyboardDefaultLayoutKeys(widget.defaultLayouts ?? [VirtualKeyboardDefaultLayouts.English]);
+    customLayoutKeys = widget.customLayoutKeys ??
+        VirtualKeyboardDefaultLayoutKeys(
+            widget.defaultLayouts ?? [VirtualKeyboardDefaultLayouts.English]);
     onKeyPress = widget.onKeyPress;
     height = widget.height;
     textColor = widget.textColor;
@@ -202,41 +266,36 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
 
     // Generate keyboard row.
     List<Widget> rows = List.generate(keyboardRows.length, (int rowNum) {
-      var items =List.generate(
-            keyboardRows[rowNum].length,
-            (int keyNum) {
-              // Get the VirtualKeyboardKey object.
-              VirtualKeyboardKey virtualKeyboardKey =
-                  keyboardRows[rowNum][keyNum];
+      var items = List.generate(keyboardRows[rowNum].length, (int keyNum) {
+        // Get the VirtualKeyboardKey object.
+        VirtualKeyboardKey virtualKeyboardKey = keyboardRows[rowNum][keyNum];
 
-              Widget keyWidget;
+        Widget keyWidget;
 
-              // Check if builder is specified.
-              // Call builder function if specified or use default
-              //  Key widgets if not.
-              if (builder == null) {
-                // Check the key type.
-                switch (virtualKeyboardKey.keyType) {
-                  case VirtualKeyboardKeyType.String:
-                    // Draw String key.
-                    keyWidget = _keyboardDefaultKey(virtualKeyboardKey);
-                    break;
-                  case VirtualKeyboardKeyType.Action:
-                    // Draw action key.
-                    keyWidget = _keyboardDefaultActionKey(virtualKeyboardKey);
-                    break;
-                }
-              } else {
-                // Call the builder function, so the user can specify custom UI for keys.
-                keyWidget = builder!(context, virtualKeyboardKey);
+        // Check if builder is specified.
+        // Call builder function if specified or use default
+        //  Key widgets if not.
+        if (builder == null) {
+          // Check the key type.
+          switch (virtualKeyboardKey.keyType) {
+            case VirtualKeyboardKeyType.String:
+              // Draw String key.
+              keyWidget = _keyboardDefaultKey(virtualKeyboardKey);
+              break;
+            case VirtualKeyboardKeyType.Action:
+              // Draw action key.
+              keyWidget = _keyboardDefaultActionKey(virtualKeyboardKey);
+              break;
+          }
+        } else {
+          // Call the builder function, so the user can specify custom UI for keys.
+          keyWidget = builder!(context, virtualKeyboardKey);
+        }
 
-              }
+        return keyWidget;
+      });
 
-              return keyWidget;
-            });
-
-      if(this.reverseLayout)
-        items = items.reversed.toList();
+      if (this.reverseLayout) items = items.reversed.toList();
       return Material(
         color: Colors.transparent,
         child: Row(
@@ -340,29 +399,29 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
         break;
     }
 
-    var wdgt =InkWell(
-        onTap: () {
-          if (key.action == VirtualKeyboardKeyAction.Shift) {
-            if (!alwaysCaps) {
-              setState(() {
-                isShiftEnabled = !isShiftEnabled;
-              });
-            }
+    var wdgt = InkWell(
+      onTap: () {
+        if (key.action == VirtualKeyboardKeyAction.Shift) {
+          if (!alwaysCaps) {
+            setState(() {
+              isShiftEnabled = !isShiftEnabled;
+            });
           }
+        }
 
-          _onKeyPress(key);
-        },
-        child: Container(
-          alignment: Alignment.center,
-          height: height / customLayoutKeys.activeLayout.length,
-          child: actionKey,
-        ),
-      );
+        _onKeyPress(key);
+      },
+      child: Container(
+        alignment: Alignment.center,
+        height: height / customLayoutKeys.activeLayout.length,
+        child: actionKey,
+      ),
+    );
 
-    if(key.action == VirtualKeyboardKeyAction.Space)
-      return SizedBox(width: (width ?? MediaQuery.of(context).size.width)/2, child:wdgt);
+    if (key.action == VirtualKeyboardKeyAction.Space)
+      return SizedBox(
+          width: (width ?? MediaQuery.of(context).size.width) / 2, child: wdgt);
     else
-      return Expanded(child:wdgt);
-
+      return Expanded(child: wdgt);
   }
 }
