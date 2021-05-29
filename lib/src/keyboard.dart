@@ -121,15 +121,15 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
       final text = textController!.text;
       final textSelection = textController!.selection;
       final newText = text.replaceRange(
-        textSelection.start,
-        textSelection.end,
+        (textSelection.start >= 0) ? textSelection.start : 0,
+        (textSelection.end >= 0) ? textSelection.end : 0,
         myText,
       );
       final myTextLength = myText.length;
       textController!.text = newText;
       textController!.selection = textSelection.copyWith(
-        baseOffset: textSelection.start + myTextLength,
-        extentOffset: textSelection.start + myTextLength,
+        baseOffset:min(textSelection.start + myTextLength, textController!.text.length),
+        extentOffset:min(textSelection.start + myTextLength, textController!.text.length),
       );
     }
   }
