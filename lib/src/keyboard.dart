@@ -12,7 +12,12 @@ class VirtualKeyboard extends StatefulWidget {
   final VirtualKeyboardType type;
 
   /// Callback for Key press event. Called with pressed `Key` object.
-  final Function(VirtualKeyboardKey key)? onKeyPress;
+  /// will fire before adding key's text to controller if a controller is provided
+  final Function(VirtualKeyboardKey key)? preKeyPress;
+
+  /// Callback for Key press event. Called with pressed `Key` object.
+  /// will fire after adding key's text to controller if a controller is provided
+  final Function(VirtualKeyboardKey key)? postKeyPress;
 
   /// Virtual keyboard height. Default is 300
   final double height;
@@ -48,7 +53,8 @@ class VirtualKeyboard extends StatefulWidget {
   VirtualKeyboard(
       {Key? key,
       required this.type,
-      this.onKeyPress,
+      this.preKeyPress,
+      this.postKeyPress,
       this.builder,
       this.width,
       this.defaultLayouts,
@@ -70,7 +76,8 @@ class VirtualKeyboard extends StatefulWidget {
 /// Holds the state for Virtual Keyboard class.
 class _VirtualKeyboardState extends State<VirtualKeyboard> {
   VirtualKeyboardType type = VirtualKeyboardType.Alphanumeric;
-  Function(VirtualKeyboardKey key)? onKeyPress;
+  Function(VirtualKeyboardKey key)? preKeyPress;
+  Function(VirtualKeyboardKey key)? postKeyPress;
   TextEditingController? textController;
 
   // The builder function will be called for each Key object.
@@ -90,6 +97,8 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   bool isShiftEnabled = false;
 
   void _onKeyPress(VirtualKeyboardKey key) {
+    if (preKeyPress != null) preKeyPress!(key);
+
     if (key.keyType == VirtualKeyboardKeyType.String) {
       if (isShiftEnabled) {
         _insertText(key.capsText!);
@@ -113,7 +122,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
       }
     }
 
-    if (onKeyPress != null) onKeyPress!(key);
+    if (postKeyPress != null) postKeyPress!(key);
   }
 
   void _insertText(String myText) {
@@ -128,8 +137,10 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
       final myTextLength = myText.length;
       textController!.text = newText;
       textController!.selection = textSelection.copyWith(
-        baseOffset:min(textSelection.start + myTextLength, textController!.text.length),
-        extentOffset:min(textSelection.start + myTextLength, textController!.text.length),
+        baseOffset: min(
+            textSelection.start + myTextLength, textController!.text.length),
+        extentOffset: min(
+            textSelection.start + myTextLength, textController!.text.length),
       );
     }
   }
@@ -187,7 +198,8 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
     super.didUpdateWidget(oldWidget);
     setState(() {
       type = widget.type;
-      onKeyPress = widget.onKeyPress;
+      preKeyPress = widget.preKeyPress;
+      postKeyPress = widget.postKeyPress;
       height = widget.height;
       width = widget.width;
       textColor = widget.textColor;
@@ -214,7 +226,8 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
     customLayoutKeys = widget.customLayoutKeys ??
         VirtualKeyboardDefaultLayoutKeys(
             widget.defaultLayouts ?? [VirtualKeyboardDefaultLayouts.English]);
-    onKeyPress = widget.onKeyPress;
+    preKeyPress = widget.preKeyPress;
+    postKeyPress = widget.postKeyPress;
     height = widget.height;
     textColor = widget.textColor;
     fontSize = widget.fontSize;
