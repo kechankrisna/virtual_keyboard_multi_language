@@ -432,8 +432,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
     );
 
     if (key.action == VirtualKeyboardKeyAction.Space)
-      return SizedBox(
-          width: (width ?? MediaQuery.of(context).size.width) / 2, child: wdgt);
+      return Expanded(flex: 6, child: wdgt);
     else
       return Expanded(child: wdgt);
   }
