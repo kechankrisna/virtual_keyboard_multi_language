@@ -32,7 +32,7 @@ class VirtualKeyboardDefaultLayoutKeys extends VirtualKeyboardLayoutKeys {
       case VirtualKeyboardDefaultLayouts.Arabic:
         return _defaultArabicLayout;
       case VirtualKeyboardDefaultLayouts.Kurdish:
-        _defaultKurdishLayout;
+        return _defaultKurdishLayout;
       default:
     }
     return _defaultEnglishLayout;
