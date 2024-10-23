@@ -12,12 +12,16 @@ class VirtualKeyboard extends StatefulWidget {
   final VirtualKeyboardType type;
 
   /// Callback for Key press event. Called with pressed `Key` object.
+
   /// will fire before adding key's text to controller if a controller is provided
   final Function(VirtualKeyboardKey key)? preKeyPress;
 
   /// Callback for Key press event. Called with pressed `Key` object.
   /// will fire after adding key's text to controller if a controller is provided
   final Function(VirtualKeyboardKey key)? postKeyPress;
+
+  //final Function? onKeyPress;
+
 
   /// Virtual keyboard height. Default is 300
   final double height;
@@ -55,6 +59,7 @@ class VirtualKeyboard extends StatefulWidget {
       required this.type,
       this.preKeyPress,
       this.postKeyPress,
+      //this.onKeyPress,
       this.builder,
       this.width,
       this.defaultLayouts,
@@ -75,11 +80,17 @@ class VirtualKeyboard extends StatefulWidget {
 
 /// Holds the state for Virtual Keyboard class.
 class _VirtualKeyboardState extends State<VirtualKeyboard> {
+
   VirtualKeyboardType type = VirtualKeyboardType.Alphanumeric;
   Function(VirtualKeyboardKey key)? preKeyPress;
   Function(VirtualKeyboardKey key)? postKeyPress;
   TextEditingController? textController;
 
+// =======
+//   late VirtualKeyboardType type;
+//   Function? onKeyPress;
+//   late TextEditingController textController;
+// >>>>>>> master
   // The builder function will be called for each Key object.
   Widget Function(BuildContext context, VirtualKeyboardKey key)? builder;
   late double height;
@@ -97,6 +108,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   bool isShiftEnabled = false;
 
   void _onKeyPress(VirtualKeyboardKey key) {
+
     if (preKeyPress != null) preKeyPress!(key);
 
     if (key.keyType == VirtualKeyboardKeyType.String) {
@@ -109,18 +121,33 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
       switch (key.action) {
         case VirtualKeyboardKeyAction.Backspace:
           _backspace();
+// =======
+//     if (key.keyType == VirtualKeyboardKeyType.String) {
+//       textController.text += ((isShiftEnabled ? key.capsText : key.text) ?? '');
+//     } else if (key.keyType == VirtualKeyboardKeyType.Action) {
+//       switch (key.action) {
+//         case VirtualKeyboardKeyAction.Backspace:
+//           if (textController.text.length == 0) return;
+//           textController.text =
+//               textController.text.substring(0, textController.text.length - 1);
+// >>>>>>> master
           break;
         case VirtualKeyboardKeyAction.Return:
           _insertText('\n');
           break;
         case VirtualKeyboardKeyAction.Space:
+
           _insertText(key.text!);
+// =======
+//           textController.text += (key.text ?? '');
+// >>>>>>> master
           break;
         case VirtualKeyboardKeyAction.Shift:
           break;
         default:
       }
     }
+
 
     if (postKeyPress != null) postKeyPress!(key);
   }
@@ -191,6 +218,16 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
 
   bool _isUtf16Surrogate(int value) {
     return value & 0xF800 == 0xD800;
+// =======
+//     onKeyPress?.call(key);
+//   }
+
+//   @override
+//   dispose() {
+//     if (widget.textController == null) // dispose if created locally only
+//       textController.dispose();
+//     super.dispose();
+// >>>>>>> master
   }
 
   @override
@@ -200,6 +237,10 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
       type = widget.type;
       preKeyPress = widget.preKeyPress;
       postKeyPress = widget.postKeyPress;
+// =======
+//       builder = widget.builder;
+//       onKeyPress = widget.onKeyPress;
+// >>>>>>> master
       height = widget.height;
       width = widget.width;
       textColor = widget.textColor;
@@ -207,6 +248,9 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
       alwaysCaps = widget.alwaysCaps;
       reverseLayout = widget.reverseLayout;
       textController = widget.textController;
+// =======
+//       textController = widget.textController ?? textController;
+// >>>>>>> master
       customLayoutKeys = widget.customLayoutKeys ?? customLayoutKeys;
       // Init the Text Style for keys.
       textStyle = TextStyle(
@@ -220,14 +264,23 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   void initState() {
     super.initState();
 
+
     textController = widget.textController;
+// =======
+//     textController = widget.textController ?? TextEditingController();
+// >>>>>>> master
     width = widget.width;
     type = widget.type;
     customLayoutKeys = widget.customLayoutKeys ??
         VirtualKeyboardDefaultLayoutKeys(
             widget.defaultLayouts ?? [VirtualKeyboardDefaultLayouts.English]);
+
     preKeyPress = widget.preKeyPress;
     postKeyPress = widget.postKeyPress;
+// =======
+//     builder = widget.builder;
+//     onKeyPress = widget.onKeyPress;
+// >>>>>>> master
     height = widget.height;
     textColor = widget.textColor;
     fontSize = widget.fontSize;
@@ -303,6 +356,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
         } else {
           // Call the builder function, so the user can specify custom UI for keys.
           keyWidget = builder!(context, virtualKeyboardKey);
+
         }
 
         return keyWidget;
@@ -340,6 +394,10 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
           alwaysCaps
               ? key.capsText!
               : (isShiftEnabled ? key.capsText! : key.text!),
+// =======
+//               ? key.capsText ?? ''
+//               : (isShiftEnabled ? key.capsText : key.text) ?? '',
+// >>>>>>> master
           style: textStyle,
         )),
       ),
@@ -349,10 +407,14 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   /// Creates default UI element for keyboard Action Key.
   Widget _keyboardDefaultActionKey(VirtualKeyboardKey key) {
     // Holds the action key widget.
-    Widget actionKey;
+    Widget? actionKey;
 
     // Switch the action type to build action Key widget.
+
     switch (key.action!) {
+// =======
+//     switch (key.action ?? VirtualKeyboardKeyAction.SwithLanguage) {
+// >>>>>>> master
       case VirtualKeyboardKeyAction.Backspace:
         actionKey = GestureDetector(
             onLongPress: () {
@@ -432,7 +494,12 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
     );
 
     if (key.action == VirtualKeyboardKeyAction.Space)
+
       return Expanded(flex: 6, child: wdgt);
+// =======
+//       return SizedBox(
+//           width: (width ?? MediaQuery.of(context).size.width) / 2, child: wdgt);
+// >>>>>>> master
     else
       return Expanded(child: wdgt);
   }

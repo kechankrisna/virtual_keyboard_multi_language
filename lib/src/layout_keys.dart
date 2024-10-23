@@ -1,49 +1,45 @@
 part of virtual_keyboard_multi_language;
 //import '../virtual_keyboard_multi_language.dart';
 
-abstract class VirtualKeyboardLayoutKeys{
-
-  int activeIndex =0;
+abstract class VirtualKeyboardLayoutKeys {
+  int activeIndex = 0;
 
   List<List> get defaultEnglishLayout => _defaultEnglishLayout;
   List<List> get defaultArabicLayout => _defaultArabicLayout;
 
-  List<List> get activeLayout =>  getLanguage(activeIndex);
+  List<List> get activeLayout => getLanguage(activeIndex);
   int getLanguagesCount();
   List<List> getLanguage(int index);
 
-  void switchLanguage(){
-    if((activeIndex+1) == getLanguagesCount())
-      activeIndex =0;
-    else activeIndex++;
+  void switchLanguage() {
+    if ((activeIndex + 1) == getLanguagesCount())
+      activeIndex = 0;
+    else
+      activeIndex++;
   }
-
 }
 
-class VirtualKeyboardDefaultLayoutKeys extends VirtualKeyboardLayoutKeys{
-  
+class VirtualKeyboardDefaultLayoutKeys extends VirtualKeyboardLayoutKeys {
   List<VirtualKeyboardDefaultLayouts> defaultLayouts;
   VirtualKeyboardDefaultLayoutKeys(this.defaultLayouts);
 
   int getLanguagesCount() => defaultLayouts.length;
 
-  List<List> getLanguage(int index){
-
-    switch(defaultLayouts[index]){
+  List<List> getLanguage(int index) {
+    switch (defaultLayouts[index]) {
       case VirtualKeyboardDefaultLayouts.English:
-      return _defaultEnglishLayout;
+        return _defaultEnglishLayout;
       case VirtualKeyboardDefaultLayouts.Arabic:
-      return _defaultArabicLayout;
+        return _defaultArabicLayout;
+      case VirtualKeyboardDefaultLayouts.Kurdish:
+        _defaultKurdishLayout;
       default:
     }
     return _defaultEnglishLayout;
   }
-
-
-
 }
 
-  /// Keys for Virtual Keyboard's rows.
+/// Keys for Virtual Keyboard's rows.
 const List<List> _defaultEnglishLayout = [
   // Row 1
   const [
@@ -113,7 +109,6 @@ const List<List> _defaultEnglishLayout = [
   ]
 ];
 
-
 const List<List> _defaultArabicLayout = [
   // Row 1
   const [
@@ -140,6 +135,7 @@ const List<List> _defaultArabicLayout = [
     'ه',
     'خ',
     'ح',
+    'ج',
     'د',
     VirtualKeyboardKeyAction.Backspace
   ],
@@ -169,7 +165,7 @@ const List<List> _defaultArabicLayout = [
     'ى',
     'ة',
     'و',
-    '.',
+    'ز',
     'ظ',
     VirtualKeyboardKeyAction.Shift
   ],
@@ -179,6 +175,78 @@ const List<List> _defaultArabicLayout = [
     '@',
     VirtualKeyboardKeyAction.Space,
     '-',
+    '.',
     '_',
+  ]
+];
+
+
+
+const List<List> _defaultKurdishLayout = [
+  // Row 1
+  const [
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    '0',
+  ],
+  // Row 2
+  const [
+    'چ',
+    'پ',
+    'ق',
+    'ڤ',
+    'ف',
+    'غ',
+    'ھ',
+    'خ',
+    'ح',
+    'ج',
+  ],
+  // Row 3
+  const [
+    'ش',
+    'س',
+    'ی',
+    'ب',
+    'ل',
+    'ا',
+    'ت',
+    'ن',
+    'م',
+    'ک',
+    'گ',
+
+  ],
+  // Row 4
+  const [
+    'ئ',
+    'ڕ',
+    'ر',
+    'ێ',
+    'ڵ',
+    'ە',
+    'و',
+    'ز',
+    'ۆ',
+    'د',
+    VirtualKeyboardKeyAction.Backspace
+
+  ],
+  // Row 5
+  const [
+    VirtualKeyboardKeyAction.SwithLanguage,
+    '@',
+    VirtualKeyboardKeyAction.Space,
+    '-',
+    '.',
+    '_',
+    VirtualKeyboardKeyAction.Return,
   ]
 ];
