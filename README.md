@@ -6,7 +6,7 @@ A simple package for dispaying virtual keyboards on a devices like kiosks and AT
 This project has forked from `virtual_keyboard` project because the `virtual_keyboard` project built to only display a buttons on the screen with single language. However, this project will handel the events and aill supports multi-languages.
 
 # Feature and TODO List:
-- (Done) Multi-langugae support.
+- (Done) Multi-langugae support. (English-Arabic-Kurdish)
 - (Done) Customizable layout.
 - (`ToDo`) Option to make a popup floating keyboard/keyNum.
 - (`ToDo`) Adding input result viewer and handel the events.

@@ -31,6 +31,8 @@ class VirtualKeyboardDefaultLayoutKeys extends VirtualKeyboardLayoutKeys {
         return _defaultEnglishLayout;
       case VirtualKeyboardDefaultLayouts.Arabic:
         return _defaultArabicLayout;
+      case VirtualKeyboardDefaultLayouts.Kurdish:
+        _defaultKurdishLayout;
       default:
     }
     return _defaultEnglishLayout;
@@ -174,5 +176,76 @@ const List<List> _defaultArabicLayout = [
     '-',
     '.',
     '_',
+  ]
+];
+
+
+
+const List<List> _defaultKurdishLayout = [
+  // Row 1
+  const [
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    '0',
+  ],
+  // Row 2
+  const [
+    'چ',
+    'پ',
+    'ق',
+    'ڤ',
+    'ف',
+    'غ',
+    'ھ',
+    'خ',
+    'ح',
+    'ج',
+  ],
+  // Row 3
+  const [
+    'ش',
+    'س',
+    'ی',
+    'ب',
+    'ل',
+    'ا',
+    'ت',
+    'ن',
+    'م',
+    'ک',
+    'گ',
+
+  ],
+  // Row 4
+  const [
+    'ئ',
+    'ڕ',
+    'ر',
+    'ێ',
+    'ڵ',
+    'ە',
+    'و',
+    'ز',
+    'ۆ',
+    'د',
+    VirtualKeyboardKeyAction.Backspace
+
+  ],
+  // Row 5
+  const [
+    VirtualKeyboardKeyAction.SwithLanguage,
+    '@',
+    VirtualKeyboardKeyAction.Space,
+    '-',
+    '.',
+    '_',
+    VirtualKeyboardKeyAction.Return,
   ]
 ];
