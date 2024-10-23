@@ -12,7 +12,16 @@ class VirtualKeyboard extends StatefulWidget {
   final VirtualKeyboardType type;
 
   /// Callback for Key press event. Called with pressed `Key` object.
-  final Function? onKeyPress;
+
+  /// will fire before adding key's text to controller if a controller is provided
+  final Function(VirtualKeyboardKey key)? preKeyPress;
+
+  /// Callback for Key press event. Called with pressed `Key` object.
+  /// will fire after adding key's text to controller if a controller is provided
+  final Function(VirtualKeyboardKey key)? postKeyPress;
+
+  //final Function? onKeyPress;
+
 
   /// Virtual keyboard height. Default is 300
   final double height;
@@ -48,7 +57,9 @@ class VirtualKeyboard extends StatefulWidget {
   VirtualKeyboard(
       {Key? key,
       required this.type,
-      this.onKeyPress,
+      this.preKeyPress,
+      this.postKeyPress,
+      //this.onKeyPress,
       this.builder,
       this.width,
       this.defaultLayouts,
@@ -69,9 +80,17 @@ class VirtualKeyboard extends StatefulWidget {
 
 /// Holds the state for Virtual Keyboard class.
 class _VirtualKeyboardState extends State<VirtualKeyboard> {
-  late VirtualKeyboardType type;
-  Function? onKeyPress;
-  late TextEditingController textController;
+
+  VirtualKeyboardType type = VirtualKeyboardType.Alphanumeric;
+  Function(VirtualKeyboardKey key)? preKeyPress;
+  Function(VirtualKeyboardKey key)? postKeyPress;
+  TextEditingController? textController;
+
+// =======
+//   late VirtualKeyboardType type;
+//   Function? onKeyPress;
+//   late TextEditingController textController;
+// >>>>>>> master
   // The builder function will be called for each Key object.
   Widget Function(BuildContext context, VirtualKeyboardKey key)? builder;
   late double height;
@@ -81,6 +100,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   late bool alwaysCaps;
   late bool reverseLayout;
   late VirtualKeyboardLayoutKeys customLayoutKeys;
+
   // Text Style for keys.
   late TextStyle textStyle;
 
@@ -88,20 +108,39 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   bool isShiftEnabled = false;
 
   void _onKeyPress(VirtualKeyboardKey key) {
+
+    if (preKeyPress != null) preKeyPress!(key);
+
     if (key.keyType == VirtualKeyboardKeyType.String) {
-      textController.text += ((isShiftEnabled ? key.capsText : key.text) ?? '');
+      if (isShiftEnabled) {
+        _insertText(key.capsText!);
+      } else {
+        _insertText(key.text!);
+      }
     } else if (key.keyType == VirtualKeyboardKeyType.Action) {
       switch (key.action) {
         case VirtualKeyboardKeyAction.Backspace:
-          if (textController.text.length == 0) return;
-          textController.text =
-              textController.text.substring(0, textController.text.length - 1);
+          _backspace();
+// =======
+//     if (key.keyType == VirtualKeyboardKeyType.String) {
+//       textController.text += ((isShiftEnabled ? key.capsText : key.text) ?? '');
+//     } else if (key.keyType == VirtualKeyboardKeyType.Action) {
+//       switch (key.action) {
+//         case VirtualKeyboardKeyAction.Backspace:
+//           if (textController.text.length == 0) return;
+//           textController.text =
+//               textController.text.substring(0, textController.text.length - 1);
+// >>>>>>> master
           break;
         case VirtualKeyboardKeyAction.Return:
-          textController.text += '\n';
+          _insertText('\n');
           break;
         case VirtualKeyboardKeyAction.Space:
-          textController.text += (key.text ?? '');
+
+          _insertText(key.text!);
+// =======
+//           textController.text += (key.text ?? '');
+// >>>>>>> master
           break;
         case VirtualKeyboardKeyAction.Shift:
           break;
@@ -109,14 +148,86 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
       }
     }
 
-    onKeyPress?.call(key);
+
+    if (postKeyPress != null) postKeyPress!(key);
   }
 
-  @override
-  dispose() {
-    if (widget.textController == null) // dispose if created locally only
-      textController.dispose();
-    super.dispose();
+  void _insertText(String myText) {
+    if (textController != null) {
+      final text = textController!.text;
+      final textSelection = textController!.selection;
+      final newText = text.replaceRange(
+        (textSelection.start >= 0) ? textSelection.start : 0,
+        (textSelection.end >= 0) ? textSelection.end : 0,
+        myText,
+      );
+      final myTextLength = myText.length;
+      textController!.text = newText;
+      textController!.selection = textSelection.copyWith(
+        baseOffset: min(
+            textSelection.start + myTextLength, textController!.text.length),
+        extentOffset: min(
+            textSelection.start + myTextLength, textController!.text.length),
+      );
+    }
+  }
+
+  void _backspace() {
+    if (textController != null) {
+      final text = textController!.text;
+      final textSelection = textController!.selection;
+      final selectionLength = textSelection.end - textSelection.start;
+
+      // There is a selection.
+      if (selectionLength > 0) {
+        final newText = text.replaceRange(
+          textSelection.start,
+          textSelection.end,
+          '',
+        );
+        textController!.text = newText;
+        textController!.selection = textSelection.copyWith(
+          baseOffset: textSelection.start,
+          extentOffset: textSelection.start,
+        );
+        return;
+      }
+
+      // The cursor is at the beginning.
+      if (textSelection.start == 0) {
+        return;
+      }
+
+      // Delete the previous character
+      final previousCodeUnit = text.codeUnitAt(textSelection.start - 1);
+      final offset = _isUtf16Surrogate(previousCodeUnit) ? 2 : 1;
+      final newStart = textSelection.start - offset;
+      final newEnd = textSelection.start;
+      final newText = text.replaceRange(
+        newStart,
+        newEnd,
+        '',
+      );
+      textController!.text = newText;
+      textController!.selection = textSelection.copyWith(
+        baseOffset: newStart,
+        extentOffset: newStart,
+      );
+    }
+  }
+
+  bool _isUtf16Surrogate(int value) {
+    return value & 0xF800 == 0xD800;
+// =======
+//     onKeyPress?.call(key);
+//   }
+
+//   @override
+//   dispose() {
+//     if (widget.textController == null) // dispose if created locally only
+//       textController.dispose();
+//     super.dispose();
+// >>>>>>> master
   }
 
   @override
@@ -124,15 +235,22 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
     super.didUpdateWidget(oldWidget);
     setState(() {
       type = widget.type;
-      builder = widget.builder;
-      onKeyPress = widget.onKeyPress;
+      preKeyPress = widget.preKeyPress;
+      postKeyPress = widget.postKeyPress;
+// =======
+//       builder = widget.builder;
+//       onKeyPress = widget.onKeyPress;
+// >>>>>>> master
       height = widget.height;
       width = widget.width;
       textColor = widget.textColor;
       fontSize = widget.fontSize;
       alwaysCaps = widget.alwaysCaps;
       reverseLayout = widget.reverseLayout;
-      textController = widget.textController ?? textController;
+      textController = widget.textController;
+// =======
+//       textController = widget.textController ?? textController;
+// >>>>>>> master
       customLayoutKeys = widget.customLayoutKeys ?? customLayoutKeys;
       // Init the Text Style for keys.
       textStyle = TextStyle(
@@ -146,14 +264,23 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   void initState() {
     super.initState();
 
-    textController = widget.textController ?? TextEditingController();
+
+    textController = widget.textController;
+// =======
+//     textController = widget.textController ?? TextEditingController();
+// >>>>>>> master
     width = widget.width;
     type = widget.type;
     customLayoutKeys = widget.customLayoutKeys ??
         VirtualKeyboardDefaultLayoutKeys(
             widget.defaultLayouts ?? [VirtualKeyboardDefaultLayouts.English]);
-    builder = widget.builder;
-    onKeyPress = widget.onKeyPress;
+
+    preKeyPress = widget.preKeyPress;
+    postKeyPress = widget.postKeyPress;
+// =======
+//     builder = widget.builder;
+//     onKeyPress = widget.onKeyPress;
+// >>>>>>> master
     height = widget.height;
     textColor = widget.textColor;
     fontSize = widget.fontSize;
@@ -230,9 +357,6 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
           // Call the builder function, so the user can specify custom UI for keys.
           keyWidget = builder!(context, virtualKeyboardKey);
 
-          // if (keyWidget == null) {
-          //   throw 'builder function must return Widget';
-          // }
         }
 
         return keyWidget;
@@ -268,8 +392,12 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
         child: Center(
             child: Text(
           alwaysCaps
-              ? key.capsText ?? ''
-              : (isShiftEnabled ? key.capsText : key.text) ?? '',
+              ? key.capsText!
+              : (isShiftEnabled ? key.capsText! : key.text!),
+// =======
+//               ? key.capsText ?? ''
+//               : (isShiftEnabled ? key.capsText : key.text) ?? '',
+// >>>>>>> master
           style: textStyle,
         )),
       ),
@@ -282,7 +410,11 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
     Widget? actionKey;
 
     // Switch the action type to build action Key widget.
-    switch (key.action ?? VirtualKeyboardKeyAction.SwithLanguage) {
+
+    switch (key.action!) {
+// =======
+//     switch (key.action ?? VirtualKeyboardKeyAction.SwithLanguage) {
+// >>>>>>> master
       case VirtualKeyboardKeyAction.Backspace:
         actionKey = GestureDetector(
             onLongPress: () {
@@ -362,8 +494,12 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
     );
 
     if (key.action == VirtualKeyboardKeyAction.Space)
-      return SizedBox(
-          width: (width ?? MediaQuery.of(context).size.width) / 2, child: wdgt);
+
+      return Expanded(flex: 6, child: wdgt);
+// =======
+//       return SizedBox(
+//           width: (width ?? MediaQuery.of(context).size.width) / 2, child: wdgt);
+// >>>>>>> master
     else
       return Expanded(child: wdgt);
   }

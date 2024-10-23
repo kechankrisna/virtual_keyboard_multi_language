@@ -8,6 +8,7 @@ class VirtualKeyboardKey {
   final VirtualKeyboardKeyAction? action;
 
   VirtualKeyboardKey(
+
       {this.text, this.capsText, required this.keyType, this.action}) {
     if (this.text == null && this.action != null) {
       this.text = action == VirtualKeyboardKeyAction.Space
@@ -20,4 +21,5 @@ class VirtualKeyboardKey {
           : (action == VirtualKeyboardKeyAction.Return ? '\n' : '');
     }
   }
+
 }
