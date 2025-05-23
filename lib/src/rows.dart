@@ -43,36 +43,10 @@ List<VirtualKeyboardKey> _getKeyboardRowKeysNumeric(rowNum) {
   });
 }
 
-/// Returns a list of `VirtualKeyboardKey` objects.
-List<VirtualKeyboardKey> _getKeyboardRowKeys(
-    VirtualKeyboardLayoutKeys layoutKeys, rowNum) {
-  // Generate VirtualKeyboardKey objects for each row.
-  return List.generate(layoutKeys.activeLayout[rowNum].length, (int keyNum) {
-    // Get key string value.
-    if (layoutKeys.activeLayout[rowNum][keyNum] is String) {
-      String key = layoutKeys.activeLayout[rowNum][keyNum];
-
-      // Create and return new VirtualKeyboardKey object.
-      return VirtualKeyboardKey(
-        text: key,
-        capsText: key.toUpperCase(),
-        keyType: VirtualKeyboardKeyType.String,
-      );
-    } else {
-      var action =
-          layoutKeys.activeLayout[rowNum][keyNum] as VirtualKeyboardKeyAction;
-      return VirtualKeyboardKey(
-          keyType: VirtualKeyboardKeyType.Action, action: action);
-    }
-  });
-}
-
 /// Returns a list of VirtualKeyboard rows with `VirtualKeyboardKey` objects.
 List<List<VirtualKeyboardKey>> _getKeyboardRows(
     VirtualKeyboardLayoutKeys layoutKeys) {
-  // Generate lists for each keyboard row.
-  return List.generate(layoutKeys.activeLayout.length,
-      (int rowNum) => _getKeyboardRowKeys(layoutKeys, rowNum));
+   return   layoutKeys.getLanguage(layoutKeys.activeIndex);
 }
 
 /// Returns a list of VirtualKeyboard rows with `VirtualKeyboardKey` objects.
