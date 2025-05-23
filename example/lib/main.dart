@@ -82,9 +82,20 @@ class _MyHomePageState extends State<MyHomePage> {
             Container(
               color: Theme.of(context).scaffoldBackgroundColor,
               child: VirtualKeyboard(
+                  keyBorder: Border(
+                    top: BorderSide(
+                        color: Theme.of(context).dividerColor, width: 0.5),
+                    bottom: BorderSide(
+                        color: Theme.of(context).dividerColor, width: 0.5),
+                    left: BorderSide(
+                        color: Theme.of(context).dividerColor, width: 0.5),
+                    right: BorderSide(
+                        color: Theme.of(context).dividerColor, width: 0.5),
+                  ),
                   height: 300,
                   // width: 500,
-                  textColor: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black,
+                  textColor: Theme.of(context).textTheme.bodyMedium?.color ??
+                      Colors.black,
                   textController: _controllerText,
                   //customLayoutKeys: _customLayoutKeys,
                   defaultLayouts: [
