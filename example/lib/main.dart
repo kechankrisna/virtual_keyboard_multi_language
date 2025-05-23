@@ -8,9 +8,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Virtual Keyboard Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      // theme: ThemeData(
+      //   primarySwatch: Colors.blue,
+      // ),
+      theme: ThemeData.dark(),
+      darkTheme: ThemeData.dark(),
       home: MyHomePage(title: 'Virtual Keyboard Demo'),
     );
   }
@@ -78,16 +80,16 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Container(),
             ),
             Container(
-              color: Colors.deepPurple,
+              color: Theme.of(context).scaffoldBackgroundColor,
               child: VirtualKeyboard(
                   height: 300,
-                  //width: 500,
-                  textColor: Colors.white,
+                  // width: 500,
+                  textColor: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black,
                   textController: _controllerText,
                   //customLayoutKeys: _customLayoutKeys,
                   defaultLayouts: [
-                    VirtualKeyboardDefaultLayouts.Arabic,
-                    VirtualKeyboardDefaultLayouts.English
+                    VirtualKeyboardDefaultLayouts.English,
+                    VirtualKeyboardDefaultLayouts.Khmer,
                   ],
                   //reverseLayout :true,
                   type: isNumericMode

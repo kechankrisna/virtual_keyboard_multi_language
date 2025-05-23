@@ -53,23 +53,26 @@ class VirtualKeyboard extends StatefulWidget {
   /// will be ignored if customLayoutKeys is not null
   final List<VirtualKeyboardDefaultLayouts>? defaultLayouts;
 
-  VirtualKeyboard(
-      {Key? key,
-      required this.type,
-      this.preKeyPress,
-      this.postKeyPress,
-      //this.onKeyPress,
-      this.builder,
-      this.width,
-      this.defaultLayouts,
-      this.customLayoutKeys,
-      this.textController,
-      this.reverseLayout = false,
-      this.height = _virtualKeyboardDefaultHeight,
-      this.textColor = Colors.black,
-      this.fontSize = 14,
-      this.alwaysCaps = false})
-      : super(key: key);
+  final Border? keyBorder;
+
+  VirtualKeyboard({
+    Key? key,
+    required this.type,
+    this.preKeyPress,
+    this.postKeyPress,
+    //this.onKeyPress,
+    this.builder,
+    this.width,
+    this.defaultLayouts,
+    this.customLayoutKeys,
+    this.textController,
+    this.reverseLayout = false,
+    this.height = _virtualKeyboardDefaultHeight,
+    this.textColor = Colors.black,
+    this.fontSize = 14,
+    this.alwaysCaps = false,
+    this.keyBorder,
+  }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -105,12 +108,13 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   // True if shift is enabled.
   bool isShiftEnabled = false;
 
-  Border keyBorder = Border(
-    top: BorderSide(color: Colors.grey.shade300, width: 0.5),
-    bottom: BorderSide(color: Colors.grey.shade300, width: 0.5),
-    left: BorderSide(color: Colors.grey.shade300, width: 0.5),
-    right: BorderSide(color: Colors.grey.shade300, width: 0.5),
-  );
+  late Border keyBorder = widget.keyBorder ??
+      Border(
+        top: BorderSide(color: Theme.of(context).dividerColor, width: 0.5),
+        bottom: BorderSide(color: Theme.of(context).dividerColor, width: 0.5),
+        left: BorderSide(color: Theme.of(context).dividerColor, width: 0.5),
+        right: BorderSide(color: Theme.of(context).dividerColor, width: 0.5),
+      );
 
   void _onKeyPress(VirtualKeyboardKey key) {
     if (preKeyPress != null) preKeyPress!(key);
