@@ -108,14 +108,6 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   // True if shift is enabled.
   bool isShiftEnabled = false;
 
-  late Border keyBorder = widget.keyBorder ??
-      Border(
-        top: BorderSide(color: Theme.of(context).dividerColor, width: 0.5),
-        bottom: BorderSide(color: Theme.of(context).dividerColor, width: 0.5),
-        left: BorderSide(color: Theme.of(context).dividerColor, width: 0.5),
-        right: BorderSide(color: Theme.of(context).dividerColor, width: 0.5),
-      );
-
   void _onKeyPress(VirtualKeyboardKey key) {
     if (preKeyPress != null) preKeyPress!(key);
 
@@ -131,13 +123,25 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
           _backspace();
           break;
         case VirtualKeyboardKeyAction.Return:
-          _insertText('\n');
+          _insertText("\n");
+          break;
+        case VirtualKeyboardKeyAction.Enter:
+          _insertText("\n");
+          break;
+        case VirtualKeyboardKeyAction.Tab:
+          _insertText("\t");
           break;
         case VirtualKeyboardKeyAction.Space:
-          _insertText(key.text!);
+          _insertText(" ");
           break;
         case VirtualKeyboardKeyAction.Shift:
+          if (!alwaysCaps) {
+            setState(() {
+              isShiftEnabled = !isShiftEnabled;
+            });
+          }
           break;
+
         default:
       }
     }
@@ -171,6 +175,12 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
       final textSelection = textController!.selection;
       final selectionLength = textSelection.end - textSelection.start;
 
+      if (textSelection.start == 0) {
+        textController!.clear();
+        textController!.selection = TextSelection.collapsed(offset: 0);
+        return;
+      }
+
       // There is a selection.
       if (selectionLength > 0) {
         final newText = text.replaceRange(
@@ -183,11 +193,6 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
           baseOffset: textSelection.start,
           extentOffset: textSelection.start,
         );
-        return;
-      }
-
-      // The cursor is at the beginning.
-      if (textSelection.start == 0) {
         return;
       }
 
@@ -211,16 +216,6 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
 
   bool _isUtf16Surrogate(int value) {
     return value & 0xF800 == 0xD800;
-// =======
-//     onKeyPress?.call(key);
-//   }
-
-//   @override
-//   dispose() {
-//     if (widget.textController == null) // dispose if created locally only
-//       textController.dispose();
-//     super.dispose();
-// >>>>>>> master
   }
 
   @override
@@ -309,8 +304,8 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
     // Get the keyboard Rows
     List<List<VirtualKeyboardKey>> keyboardRows =
         type == VirtualKeyboardType.Numeric
-            ? _getKeyboardRowsNumeric()
-            : _getKeyboardRows(customLayoutKeys);
+            ? numberKeyboardLayout
+            : customLayoutKeys.getLanguage(customLayoutKeys.activeIndex);
 
     // Generate keyboard row.
     List<Widget> rows = List.generate(keyboardRows.length, (int rowNum) {
@@ -367,6 +362,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
         child: InkWell(
       onTap: () {
         _onKeyPress(key);
+        print(customLayoutKeys.activeLayout);
       },
       child: Container(
         height: height / customLayoutKeys.activeLayout.length,
@@ -378,7 +374,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
           style: textStyle,
         )),
         decoration: BoxDecoration(
-          border: keyBorder,
+          border: widget.keyBorder,
         ),
       ),
     ));
@@ -420,21 +416,95 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
                 color: textColor,
               ),
               decoration: BoxDecoration(
-                border: keyBorder,
+                border: widget.keyBorder,
               ),
             ));
         break;
       case VirtualKeyboardKeyAction.Shift:
-        actionKey = Icon(Icons.arrow_upward, color: textColor);
+        // actionKey = Icon(Icons.arrow_upward, color: textColor);
+        actionKey = GestureDetector(
+            onTap: () {
+              if (!alwaysCaps) {
+                setState(() {
+                  isShiftEnabled = !isShiftEnabled;
+                });
+              }
+            },
+            child: Container(
+              height: double.infinity,
+              width: double.infinity,
+              child: Icon(
+                Icons.arrow_upward,
+                color: textColor,
+              ),
+              decoration: BoxDecoration(
+                border: widget.keyBorder,
+              ),
+            ));
+        break;
+      case VirtualKeyboardKeyAction.Tab:
+        actionKey = Icon(Icons.keyboard_tab, color: textColor);
+        break;
+      case VirtualKeyboardKeyAction.Capslock:
+        actionKey = Icon(Icons.keyboard_capslock, color: textColor);
         break;
       case VirtualKeyboardKeyAction.Space:
-        actionKey = actionKey = Icon(Icons.space_bar, color: textColor);
+        actionKey = Icon(Icons.space_bar, color: textColor);
         break;
       case VirtualKeyboardKeyAction.Return:
         actionKey = Icon(
           Icons.keyboard_return,
           color: textColor,
         );
+        break;
+      case VirtualKeyboardKeyAction.Hiddenspace:
+        // TODO: Handle this case.
+        break;
+      case VirtualKeyboardKeyAction.Control:
+        // TODO: Handle this case.
+        break;
+      case VirtualKeyboardKeyAction.Alt:
+        // TODO: Handle this case.
+        break;
+      case VirtualKeyboardKeyAction.Enter:
+        actionKey = Icon(
+          Icons.keyboard_return,
+          color: textColor,
+        );
+        break;
+      case VirtualKeyboardKeyAction.Escape:
+        // TODO: Handle this case.
+        break;
+      case VirtualKeyboardKeyAction.ArrowLeft:
+        // TODO: Handle this case.
+        break;
+      case VirtualKeyboardKeyAction.ArrowRight:
+        // TODO: Handle this case.
+        break;
+      case VirtualKeyboardKeyAction.ArrowUp:
+        // TODO: Handle this case.
+        break;
+      case VirtualKeyboardKeyAction.ArrowDown:
+        // TODO: Handle this case.
+        break;
+      case VirtualKeyboardKeyAction.SwitchNumber:
+        actionKey = GestureDetector(
+            onTap: () {
+              setState(() {
+                customLayoutKeys.toggleisNumberMode();
+              });
+            },
+            child: Container(
+              height: double.infinity,
+              width: double.infinity,
+              child: Icon(
+                customLayoutKeys.isNumberMode ? Icons.abc : Icons.onetwothree,
+                color: textColor,
+              ),
+              decoration: BoxDecoration(
+                border: widget.keyBorder,
+              ),
+            ));
         break;
       case VirtualKeyboardKeyAction.SwithLanguage:
         actionKey = GestureDetector(
@@ -451,7 +521,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
                 color: textColor,
               ),
               decoration: BoxDecoration(
-                border: keyBorder,
+                border: widget.keyBorder,
               ),
             ));
         break;
@@ -474,7 +544,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
         height: height / customLayoutKeys.activeLayout.length,
         child: actionKey,
         decoration: BoxDecoration(
-          border: keyBorder,
+          border: widget.keyBorder,
         ),
       ),
     );

@@ -1,4 +1,4 @@
-import '../virtual_keyboard_multi_language.dart';
+import '../../virtual_keyboard_multi_language.dart';
 
 /// Keys for Virtual Keyboard's rows.
 List<List<VirtualKeyboardKey>> englishKeyboardLayout = [
@@ -77,6 +77,10 @@ List<List<VirtualKeyboardKey>> englishKeyboardLayout = [
   // New Row 2
   [
     VirtualKeyboardKey(
+      keyType: VirtualKeyboardKeyType.Action,
+      action: VirtualKeyboardKeyAction.Tab
+    ),
+    VirtualKeyboardKey(
       text: 'q',
       capsText: 'Q',
       keyType: VirtualKeyboardKeyType.String,
@@ -145,6 +149,10 @@ List<List<VirtualKeyboardKey>> englishKeyboardLayout = [
 
   // New Row 3
   [
+    VirtualKeyboardKey(
+      keyType: VirtualKeyboardKeyType.Action,
+      action: VirtualKeyboardKeyAction.Capslock
+    ),
     VirtualKeyboardKey(
       text: 'a',
       capsText: 'A',

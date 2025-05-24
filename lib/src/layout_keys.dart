@@ -3,9 +3,14 @@ part of virtual_keyboard_multi_language;
 abstract class VirtualKeyboardLayoutKeys {
   int activeIndex = 0;
 
-  List<List<VirtualKeyboardKey>> get defaultEnglishLayout => englishKeyboardLayout;
+  bool isNumberMode = false;
 
-  List<List<VirtualKeyboardKey>> get defaultKhmerLayout => khmerKeyboardLayout;
+  List<List<VirtualKeyboardKey>> get defaultEnglishLayout => isNumberMode
+      ? iosEnglishNumberKeyboardLayout
+      : iosEnglishTextKeyboardLayout;
+
+  List<List<VirtualKeyboardKey>> get defaultKhmerLayout =>
+      isNumberMode ? iosKhmerNumberKeyboardLayout : iosKhmerTextKeyboardLayout;
 
   List<List<VirtualKeyboardKey>> get activeLayout => getLanguage(activeIndex);
   int getLanguagesCount();
@@ -17,6 +22,11 @@ abstract class VirtualKeyboardLayoutKeys {
     else
       activeIndex++;
   }
+
+  toggleisNumberMode() {
+    isNumberMode = !isNumberMode;
+    // This method can be overridden in subclasses if needed.
+  }
 }
 
 class VirtualKeyboardDefaultLayoutKeys extends VirtualKeyboardLayoutKeys {
@@ -26,13 +36,20 @@ class VirtualKeyboardDefaultLayoutKeys extends VirtualKeyboardLayoutKeys {
   int getLanguagesCount() => defaultLayouts.length;
 
   List<List<VirtualKeyboardKey>> getLanguage(int index) {
+    // switch (defaultLayouts[index]) {
+    //   case VirtualKeyboardDefaultLayouts.English:
+    //     return englishKeyboardLayout;
+    //   case VirtualKeyboardDefaultLayouts.Khmer:
+    //     return khmerKeyboardLayout;
+    //   default:
+    // }
     switch (defaultLayouts[index]) {
       case VirtualKeyboardDefaultLayouts.English:
-        return englishKeyboardLayout;
+        return defaultEnglishLayout;
       case VirtualKeyboardDefaultLayouts.Khmer:
-        return khmerKeyboardLayout;
+        return defaultKhmerLayout;
       default:
     }
-    return englishKeyboardLayout;
+    return defaultEnglishLayout;
   }
 }
